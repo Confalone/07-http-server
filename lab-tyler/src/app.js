@@ -1,62 +1,144 @@
+/* NOT EXPRESS SERVER */
+
+
 'use strict';
 
-/Feature Tasks
-For this assignment you will be building a HTTP server with a main server module and separate module/s to parse a request's url and body.
+// 1st Party library
+const http = require('http');
 
-The application will use the Cowsay module.
+// Local Libraries
+// parser will tear the URL apart and give us back an object with things like path, query params, etc.
+// it will also deal with POST data and append JSON to req.body if sent
+const parser = require('./lib/parser');
 
-The server module is responsible for creating an http server defining all route behavior and exporting an interface for starting and stoping the server. It should export an object with start and stop methods. The start and stop methods should each return a promise that resolves on success and rejects on error.
+function makeHTmlResponse(res) {
+  res.setHeader('Content-Type', 'text/html');
+  res.statusCode = 200;
+  res.statusMessage = 'OK';
+}
+const requestHandler = (req, res) => {
 
-GET /
-When a client makes a GET request to / the server should send back html with a project description and a anchor to /cowsay.
+  // Take a look here if you're interested to see what some parts of the request object are.
+  // console.log(req.method);
+  // console.log(req.headers);
+  // console.log(req.url);
 
-<!DOCTYPE html>
-<html>
-  <head>
-    <title> cowsay </title>  
-  </head>
-  <body>
-   <header>
-     <nav>
-       <ul> 
-         <li><a href="/cowsay">cowsay</a></li>
-       </ul>
-     </nav>
-   <header>
-   <main>
-     <!-- project description -->
-   </main>
-  </body>
-</html>
-GET /cowsay?text={message}
-When a client makes a GET request to /cowsay?text={message} the server should parse the querystring for a text key. It should then send a rendered HTML page with a cowsay cow speaking the value of the text query. If their is no text query the cow message should say 'I need something good to say!'.
+  // In all cases, parse the URL
+  parser(req)
+    .then(req => {
 
-<!DOCTYPE html>
-<html>
+      /* The "if" statements below are our "routes" and do the same things that express does (below) but 100% manually
+           app.get('/', (req,res) => res.send('Hello From the Gutter'));
+           app.get('/foo/bar/baz', (req,res) => res.send('Hello From the Gutter'));
+      */
+      if (req.method === 'GET' && req.url.pathname === '/') {
+        makeHTmlResponse(res);
+
+
+        let markup = `<!DOCTYPE html>
+        <html>
+          <head>
+            <title> cowsay </title>  
+          </head>
+          <body>
+           <header>
+             <nav>
+               <ul> 
+                 <li><a href="/cowsay">cowsay</a></li>
+               </ul>
+             </nav>
+           </header>
+           <main>
+             <!-- project description -->
+           </main>
+          </body>
+        </html>`;
+
+        res.write(markup);
+
+        res.end();
+        return;
+        else if
+
+
+        // Send out some random HTML (actually, it's not totally random. Note how it includes req.url.query.you ...
+        // That would show whatever you have in the URL after you = (http://localhost:3000?this=that&you=cool
+
+        let message = req.url.query.you;
+
+      // use this for /cosway?text=whatever u please
+      // message = "Hola";
+
+      res.write(`<!DOCTYPE html><html><body><h1>${message}</h1></body></html>`);
+      // ... Instead of doing manual HTML like that, you could have used the "fs" module to read a file
+      // and "res.write()" the contents of that file.
+
+      res.end();
+      return;
+    }
+
+      else if (req.method === 'GET' && req.url.pathname === '/cowsay') {
+
+  //cowsay with query text here
+  makeHTmlResponse(res);
+  let markup = `
+        <!DOCTYPE html>
+          <html>
   <head>
     <title> cowsay </title>  
   </head>
   <body>
     <h1> cowsay </h1>
     <pre>
-      <!-- cowsay.say({text: req.query.text}) -->
+      ${cowsay.say({ text: req.url.query.text })}
     </pre>
   </body>
-</html>
-POST /api/cowsay
-When a client makes a POST request to /api/cowsay it should send JSON that includes {"text": "<message>"}. The server should respond with a JSON body {"content": "<cowsay cow>"}.
+</html>`;
 
-A response for a valid Requests should have a status code of 200 and the JSON body
+  res.write(markup);
 
-{
-  "content": "<cowsay cow text>" 
+  res.end();
+
+  return;
 }
-A response for a invalid Requests should have a status code of 400 and the JSON body...
+// Here, we have a "POST" request which will always return a JSON object.  That object will either be
+// the JSON that you posted in (just spitting it back out), or an error object, formatted to look like JSON
+else if (req.method === 'POST' && req.url.pathname === '/api/cowsay') {
+  res.setHeader('Content-Type', 'text/json');
+  res.statusCode = 200;
+  res.statusMessage = 'Alrighty than';
 
-{
-  "error": "invalid request: text query required"
+  //send back json message
+  // res.write(JSON.stringify(req.body));
+  let cowMessage = cowsay.say{(text: req.body.text)};
+res.write(JSON.stringify{
+  content: cowMessage({ req.body.text });
+
+  res.end();
+  return;
 }
-Request	Response Status Code	Response Type	Response Body
-With out a body	400	JSON	{"error": "invalid request: body required"}
-With out text property on the body	400	JSON	{"error": "invalid request: text query required"}
-With text query	200	J
+
+else {
+    res.setHeader('Content-Type', 'text/html');
+    res.statusCode = 404;
+    res.statusMessage = 'Not Found';
+    res.write('Resource Not Found');
+    res.end();
+  }
+
+    }) // closes the "then" of the parser promise
+  .catch(err => {
+    res.writeHead(500);
+    res.write(err);
+    res.end();
+  })
+};
+
+// Server callback
+const app = http.createServer(requestHandler);
+
+// Expose the start and stop methods.  index.js will call on these.
+module.exports = {
+  start: (port, callback) => app.listen(port, callback),
+  stop: (callback) => app.close(callback),
+};
