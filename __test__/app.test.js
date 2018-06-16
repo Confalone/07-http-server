@@ -4,6 +4,16 @@ const superagent = require('superagent');
 const app = require('../src/app.js'); //eslint-disable-line
 
 describe('app.test.js',() => {
+
+  const PORT = 3000;
+  beforeAll(() => {
+    app.start(PORT);
+  });
+
+  afterAll(() => {
+    app.stop();
+  });
+  
   it('POST request should respond with a 200 status code and a body if there is no error', () => {
     let bodyToTest = { 'text':'tyler'};
     return superagent.post('http://localhost:3000/api/cowsay')
