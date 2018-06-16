@@ -40,5 +40,4 @@ module.exports = (req) => {
     req.on('err', reject);
 
   });
-
 };
