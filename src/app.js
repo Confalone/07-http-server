@@ -44,6 +44,7 @@ const requestHandler = (req, res) => {
 
         makeHtmlResponse(res);
         let message = cowsay.say({text: 'I need something good to say'});
+        if(req.url.query.text) message = cowsay.say(req.url.query);
         let markup = `
                 <!DOCTYPE html>
                   <html>
@@ -61,57 +62,41 @@ const requestHandler = (req, res) => {
         res.end();
         
         return;
+      } else if (req.method === 'POST' && req.url.pathname === '/api/cowsay') {
+  
+
+        if(req.body.text === undefined) {
+          res.setHeader('Content-Type', 'text/json');
+          res.statusCode = 400;
+          res.statusMessage = 'error: invalid request: body required';
+          res.end();
+          return;
+        }
+        
+        res.setHeader('Content-Type', 'text/json');
+        res.statusCode = 200;
+        res.statusMessage = 'Alrighty then';
+        res.body = cowsay.say({text: `${req.body.text}`});
+        res.write(`{"content": "${req.body.text}"}`);
+        res.end();
+        return;
+
+      } else {
+        res.setHeader('Content-Type', 'text/html');
+        res.statusCode = 404;
+        res.statusMessage = 'Not Found';
+        res.write('Resource Not Found');
+        res.end();
       }
+    }) 
+    .catch(err => {
+      res.writeHead(500);
+      res.write(err);
+      res.end();
     });
 };
+    
 
-
-// let message = req.url.query.you;
-
-// use this for /cosway?text=whatever u please
-// message = "Hola";
-
-// res.write(`<!DOCTYPE html><html><body><h1>${message}</h1></body></html>`);
-// ... Instead of doing manual HTML like that, you could have used the "fs" module to read a file
-// and "res.write()" the contents of that file.
-
-//   res.end();
-//   return;
-// }
-
-
-// Here, we have a "POST" request which will always return a JSON object.  That object will either be
-// the JSON that you posted in (just spitting it back out), or an error object, formatted to look like JSON
-// else if (req.method === 'POST' && req.url.pathname === '/api/cowsay') {
-//   res.setHeader('Content-Type', 'text/json');
-//   res.statusCode = 200;
-//   res.statusMessage = 'Alrighty than';
-
-//send back json message
-// res.write(JSON.stringify(req.body));
-//   let cowMessage = cowsay.say{(text: req.body.text)};
-// res.write(JSON.stringify{
-//   content: cowMessage({ req.body.text });
-
-//   res.end();
-//   return;
-// }
-
-// else {
-//     res.setHeader('Content-Type', 'text/html');
-//     res.statusCode = 404;
-//     res.statusMessage = 'Not Found';
-//     res.write('Resource Not Found');
-//     res.end();
-//   }
-
-//     }) // closes the "then" of the parser promise
-//   .catch(err => {
-//     res.writeHead(500);
-//     res.write(err);
-//     res.end();
-//   })
-// };
 
 const app = http.createServer(requestHandler);
 
