@@ -1,112 +1,26 @@
-![cf](https://i.imgur.com/7v5ASc8.png) Lab 07: Vanilla HTTP Server
-======
+[![Build Status](https://travis-ci.com/Confalone/07-http-server.svg?branch=master)](https://travis-ci.com/Confalone/07-http-server)
 
-## Submission Instructions
-* Work in a fork of this repository
-* Work in a branch on your fork
-* Create a PR to your master from your working branch.
-* Ensure that your repository/branch is connected to travis-ci.com
-* **Optional** Ensure that your repository/branch is connected to a dyno at heroku.com 
-* Travis (and optionally Heroku) should pick you up and deploy
-* Submit on canvas:
-  * a question and observation
-  * how long you spent
-  * link to your pull request
-  * link to your build at travis-ci URL
-  * Heroku Server URL (optional)
+# Lab 07 Vanilla HTTP Server
 
-## Configuration 
-Configure the root of your repository with the following files and directories. Thoughfully name and organize any aditional configuration or module files.
-* **README.md** - contains documentation
-* **.env** - contains env variables (should be git ignored)
-* **.gitignore** - contains a [robust](http://gitignore.io) `.gitignore` file 
-* **.eslintrc** - contains the course linter configuratoin
-* **.eslintignore** - contains the course linter ignore configuration
-* **.travis.yml** - contains the course linter ignore configuration
-* **package.json** - contains npm package config
-  * create a `lint` script for running eslint (eslint **/*.js)
-  * create a `test` script for running tests
-  * create a `start` script for running your server
-* **index.js** - the entry point for your application
-* **src/** - contains your core application files and folders
-* **src/app.js** - (or main.js) contains your core application bootstrap
-* **src/lib/** - contains module definitions
-* **\_\_test\_\_/** - contains unit tests
+### Instructions
+ * 1. npm install
+ * 2. add a `.env` with the following code: `PORT=3000`
+ * 3. start the server `npm run start`
+ * 4. follow specific instructions below for a GET or POST request
 
-## Feature Tasks  
-For this assignment you will be building a HTTP server with a  main *server module* and separate module/s to parse a request's url and body. 
-
-The application will use the [Cowsay](https://www.npmjs.com/package/cowsay) module.
-
-The server module is responsible for creating an http server defining all route behavior and exporting an interface for starting and stoping the server. It should export an object with `start` and `stop` methods. The start and stop methods should each return a promise that resolves on success and rejects on error. 
-###### GET /
-
-When a client makes a GET request to / the server should send back html with a project description and a anchor to /cowsay.
-``` html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title> cowsay </title>  
-  </head>
-  <body>
-   <header>
-     <nav>
-       <ul> 
-         <li><a href="/cowsay">cowsay</a></li>
-       </ul>
-     </nav>
-   <header>
-   <main>
-     <!-- project description -->
-   </main>
-  </body>
-</html>
-```
-
-###### GET /cowsay?text={message}
-
-When a client makes a GET request to /cowsay?text={message} the server should parse the querystring for a text key. It should then send a rendered HTML page with a cowsay cow speaking the value of the text query. If their is no text query the cow message should say `'I need something good to say!'`. 
-``` html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title> cowsay </title>  
-  </head>
-  <body>
-    <h1> cowsay </h1>
-    <pre>
-      <!-- cowsay.say({text: req.query.text}) -->
-    </pre>
-  </body>
-</html>
-```
-
-###### POST /api/cowsay
+ #### GET request
+ * to make a request to `/` user must go to `http://localhost:3000` in the prefered browser.  server will respond with an HTML and a link to `/cowsay`]
+ * user can click the cowsay link and be directed to a page with an image of a cow with a quote box
+ * to change the words the cow is saying a user can add `?text={message}`
  
-When a client makes a POST request to /api/cowsay it should send JSON that includes `{"text": "<message>"}`. The server should respond with a JSON body `{"content": "<cowsay cow>"}`.  
+ #### For Example
+ * `http://localhost:3000/cowsay?text=hello`  this is how the user would change the cows words to hello
 
-A response for a valid Requests should have a status code of 200 and the JSON body   
-``` json 
-{
-  "content": "<cowsay cow text>" 
-}
-```
+ #### Post request (all done in terminal)
+ * check that httpie is installed
+ * user can type the data they want to send in the following format `echo '{"<key>" : "<value"}' | http post localhost:3000/api/cowsay`
+ * response should be a 200 status code and text in the follwoing format `{"content":"<value>"}`
 
-A response for a invalid Requests should have a status code of 400 and the JSON body...
-```
-{
-  "error": "invalid request: text query required"
-}
-```
-
-
-
-| Request | Response Status Code | Response Type | Response Body |
-| -- | -- | -- | -- |
-| With out a body | 400 | JSON | `{"error": "invalid request: body required"}` |
-| With out text property on the body | 400 | JSON | `{"error": "invalid request: text query required"}` |
-| With text query | 200 | JSON | `{"content": "<cowsay cow text>"}` |
-
-
-## Bonus
-**1pts:** add the ability to change the cowfile on GET /cowsay, GET /api/cowsay, and POST /api/cowsay - **ex: dragon, sheep, etc**
+ #### For Example
+ * request: `echo '{"text" : "tyler"}' | http post localhost:3000/api/cowsay`
+ * response: `{"content":"tyler"}`
